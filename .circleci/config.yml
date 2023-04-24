@@ -127,12 +127,12 @@ jobs:
             npm install
             # npm install oauth-sign@^0.9.0
             # If the "npm audit fix" command above could not fix all critical vulnerabilities, try “npm audit fix --force” again
-            npm audit --ignore node-fetch
-            npm audit --ignore minimatch
-            npm audit --ignore json5
+            # npm audit --ignore node-fetch
+            # npm audit --ignore minimatch
+            # npm audit --ignore json5
             npm audit fix
-            npm audit fix --force
             npm audit --audit-level=critical
+            npm audit fix --force
   scan-backend:
     docker:
       # Docker image here
@@ -149,14 +149,14 @@ jobs:
           command: |
             cd backend
             npm install
-            npm audit --ignore request
-            npm audit --ignore qs
-            npm audit --ignore ajv
+            # npm audit --ignore request
+            # npm audit --ignore qs
+            # npm audit --ignore ajv
             # npm install oauth-sign@^0.9.0
             # If the "npm audit fix" command above could not fix all critical vulnerabilities, try “npm audit fix --force” again
             npm audit fix
-            npm audit fix --force
             npm audit --audit-level=critical
+            npm audit fix --force
   deploy-infrastructure:
     docker:
       # Docker image here that supports AWS CLI
