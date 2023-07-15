@@ -205,7 +205,7 @@ jobs:
           fingerprints: ["09:98:3b:1d:61:bf:45:a4:56:92:a4:c2:7d:7e:13:63"]
       - attach_workspace:
           at: project/.circleci/ansible/
-      run:
+      - run:
           name: Install dependencies
           command: |
             # Your code here
@@ -231,21 +231,21 @@ jobs:
           command: |
             # Your code here
             cd backend
-		        npm install
-		        ## Run and save the migration output
-		        npm run migrations > migrations_dump.txt
+            npm install
+            ## Run and save the migration output
+            npm run migrations > migrations_dump.txt
             #exit 1
       - run:
           name: Send migration results to memstash
           command: |
             # Your code here
             if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
- 		        then
-         	  # If you are using memstash.io, generate the token "7933fe63-4687-4fa1-8426-aa25aa1730ec" on the website
- 			      curl -H "Content-Type: text/plain" -H "token: 7933fe63-4687-4fa1-8426-aa25aa1730ec" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
- 			      # If you are using kvdb.io, generate the bucket ID "9GE4jRtKznmVKRfvdBABBe" in your local terminal first
- 			      curl https://kvdb.io/9GE4jRtKznmVKRfvdBABBe/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
-     	      fi
+            then
+            # If you are using memstash.io, generate the token "7933fe63-4687-4fa1-8426-aa25aa1730ec" on the website
+            curl -H "Content-Type: text/plain" -H "token: 7933fe63-4687-4fa1-8426-aa25aa1730ec" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
+            # If you are using kvdb.io, generate the bucket ID "9GE4jRtKznmVKRfvdBABBe" in your local terminal first
+            curl https://kvdb.io/9GE4jRtKznmVKRfvdBABBe/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+            fi
             #exit 1
      # Here's where you will add some code to rollback on failure      
 
@@ -269,7 +269,7 @@ jobs:
           command: |
             # your code here
             export BACKEND_IP=$(aws ec2 describe-instances \          
- 	          --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --filters "Name=tag:Project,Values=udacity"
             export API_URL="http://${BACKEND_IP}:3030"
             echo "API_URL = ${API_URL}"
