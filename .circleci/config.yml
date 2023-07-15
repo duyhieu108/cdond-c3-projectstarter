@@ -217,7 +217,8 @@ jobs:
             # Your code here
             ansible-playbook -i /ansible/inventory.txt .circleci/ansible/configure-server.yml
             #exit 1
-      # Here's where you will add some code to rollback on failure      
+      # Here's where you will add some code to rollback on failure
+      - destroy-environment     
 
   run-migrations:
     docker:
@@ -244,10 +245,11 @@ jobs:
             # If you are using memstash.io, generate the token "7933fe63-4687-4fa1-8426-aa25aa1730ec" on the website
             # curl -H "Content-Type: text/plain" -H "token: 7933fe63-4687-4fa1-8426-aa25aa1730ec" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
             # If you are using kvdb.io, generate the bucket ID "9GE4jRtKznmVKRfvdBABBe" in your local terminal first
-            curl https://kvdb.io/DT8CarpLgRbw4JjJvavCnS/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+            curl --insecure https://kvdb.io/DT8CarpLgRbw4JjJvavCnS/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
             fi
             #exit 1
-     # Here's where you will add some code to rollback on failure      
+     # Here's where you will add some code to rollback on failure
+     - destroy-environment   
 
   deploy-frontend:
     docker:
