@@ -10,8 +10,8 @@ Resources:
   WebsiteBucket:
     Type: AWS::S3::Bucket
     Properties:
-      #BucketName: !Sub "udapeople-${ID}"
-      BucketName: !Sub "udapeople-frontend"
+      BucketName: !Sub "udapeople-${ID}"
+      #BucketName: !Sub "udapeople-frontend"
       #AccessControl: PublicRead
       PublicAccessBlockConfiguration:
         BlockPublicPolicy: false
