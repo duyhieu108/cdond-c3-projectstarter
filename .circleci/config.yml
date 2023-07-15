@@ -185,9 +185,9 @@ jobs:
           command: |
             # Your code here
             aws ec2 describe-instances \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:Project,Values=uda-people" \
-              --output text >> inventory
+              --query 'Reservations[*].Instances[*].{Instance:PublicIpAddress}' \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --output text >> inventory.txt
             # exit 1
       - persist_to_workspace:
           root: ~/
@@ -274,8 +274,8 @@ jobs:
           command: |
             # your code here
             export BACKEND_IP=$(aws ec2 describe-instances \          
-            --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            --filters "Name=tag:Project,Values=uda-people")
+            --query 'Reservations[*].Instances[*].{Instance:PublicIpAddress}' \
+            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}"
             export API_URL="http://${BACKEND_IP}:3030"
             echo "API_URL = ${API_URL}"
             echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
@@ -323,7 +323,7 @@ jobs:
             cd .circleci/ansible
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
-            ansible-playbook -i /ansible/inventory.txt .circleci/ansible/deploy-backend.yml
+            ansible-playbook -i /ansible/inventory.txt /ansible/deploy-backend.yml
       # Here's where you will add some code to rollback on failure  
       - destroy-environment
   smoke-test:
@@ -345,8 +345,8 @@ jobs:
           command: |
             # your code here
             export BACKEND_IP=$(aws ec2 describe-instances \          
-            --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            --filters "Name=tag:Project,Values=uda-people")
+            --query 'Reservations[*].Instances[*].{Instance:PublicIpAddress}' \
+            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}"
       - run:
           name: Backend smoke test.
           command: |
