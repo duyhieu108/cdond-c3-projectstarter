@@ -215,7 +215,7 @@ jobs:
           name: Configure server
           command: |
             # Your code here
-            ansible-playbook -i /ansible/inventory.txt ansible/configure-server.yml
+            ansible-playbook -i /ansible/inventory.txt .circleci/ansible/configure-server.yml
             #exit 1
       # Here's where you will add some code to rollback on failure      
 
