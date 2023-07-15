@@ -32,10 +32,6 @@ commands:
             SUCCESS=$(curl --insecure  https://kvdb.io/DT8CarpLgRbw4JjJvavCnS/migration_${CIRCLE_WORKFLOW_ID:0:7})
             if(( $SUCCESS==1 )); 
             then
-            #  cd ~/project/backend
-            #  npm install
-            #  Add revert code here. You can find this in the Getting Started section.
-            #  exit 1
             cd ~/project/backend
             npm install
             npm run migrations:revert
@@ -352,11 +348,12 @@ jobs:
             # your code here
             aws --version
             /usr/local/bin/aws --version
-            export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].{Instance:PublicIpAddress}' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
+            echo "BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].{Instance:PublicIpAddress}' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)"
       - run:
           name: Backend smoke test.
           command: |
             # your code here
+            export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].{Instance:PublicIpAddress}' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "API_URL = ${API_URL}"
             if curl "${API_URL}/api/status" | grep "Hello world!"
@@ -385,6 +382,7 @@ jobs:
       # Docker image here that supports AWS CLI
       - image: amazon/aws-cli
     steps:
+      - checkout
       # Checkout code from git
       - run:
           name: Install dependencies
@@ -394,6 +392,7 @@ jobs:
           name: Update cloudfront distribution
           command: |
             # your code here
+            aws cloudformation deploy --template-file .circleci/files/cloudfront.yml --stack-name InitialStack --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" --tags Project=uda-people
       # Here's where you will add some code to rollback on failure  
       - destroy-environment
   cleanup:
@@ -447,5 +446,5 @@ workflows:
           requires: [deploy-backend, deploy-frontend]
       - cloudfront-update:
           requires: [smoke-test]
-      - cleanup:
-          requires: [cloudfront-update]
+      #- cleanup:
+      #    requires: [cloudfront-update]
