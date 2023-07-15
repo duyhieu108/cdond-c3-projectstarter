@@ -275,7 +275,7 @@ jobs:
             # your code here
             export BACKEND_IP=$(aws ec2 describe-instances \          
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            --filters "Name=tag:Project,Values=uda-people"
+            --filters "Name=tag:Project,Values=uda-people")
             export API_URL="http://${BACKEND_IP}:3030"
             echo "API_URL = ${API_URL}"
             echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
@@ -308,7 +308,8 @@ jobs:
           name: Install dependencies
           command: |
             # your code here
-            apk add --update ansible 
+            apk add --update ansible
+            apk add --update npm
       - run:
           name: Deploy backend
           command: |
@@ -345,7 +346,7 @@ jobs:
             # your code here
             export BACKEND_IP=$(aws ec2 describe-instances \          
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            --filters "Name=tag:Project,Values=uda-people"
+            --filters "Name=tag:Project,Values=uda-people")
       - run:
           name: Backend smoke test.
           command: |
