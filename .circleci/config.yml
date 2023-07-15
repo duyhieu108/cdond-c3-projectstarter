@@ -275,7 +275,7 @@ jobs:
             # your code here
             export BACKEND_IP=$(aws ec2 describe-instances \          
             --query 'Reservations[*].Instances[*].{Instance:PublicIpAddress}' \
-            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}"
+            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}")
             export API_URL="http://${BACKEND_IP}:3030"
             echo "API_URL = ${API_URL}"
             echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
@@ -346,7 +346,7 @@ jobs:
             # your code here
             export BACKEND_IP=$(aws ec2 describe-instances \          
             --query 'Reservations[*].Instances[*].{Instance:PublicIpAddress}' \
-            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}"
+            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}")
       - run:
           name: Backend smoke test.
           command: |
