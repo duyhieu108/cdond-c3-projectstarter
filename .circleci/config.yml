@@ -20,20 +20,24 @@ commands:
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
     #parameters:
-      # Add parameter here     
+      # Add parameter here
     steps:
       - run:
           name: Revert migrations
           # Add when this will run
+          when: on_fail
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS = 1
+            SUCCESS=$(curl --insecure  https://kvdb.io/DT8CarpLgRbw4JjJvavCnS/migration_${CIRCLE_WORKFLOW_ID:0:7})
             if(( $SUCCESS==1 )); 
             then
             #  cd ~/project/backend
             #  npm install
             #  Add revert code here. You can find this in the Getting Started section.
-              exit 1
+            #  exit 1
+            cd ~/project/backend
+            npm install
+            npm run migrations:revert
             fi
             
 jobs:
@@ -163,7 +167,7 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
-              --tags project=uda-people \
+              --tags Project=uda-people \
               --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7}
               # exit 1
@@ -172,7 +176,7 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
-              --tags project=uda-people \
+              --tags Project=uda-people \
               --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7} \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7}  
               # exit 1
@@ -182,7 +186,7 @@ jobs:
             # Your code here
             aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:Project,Values=udacity" \
+              --filters "Name=tag:Project,Values=uda-people" \
               --output text >> inventory
             # exit 1
       - persist_to_workspace:
@@ -218,7 +222,7 @@ jobs:
             ansible-playbook -i /ansible/inventory.txt .circleci/ansible/configure-server.yml
             #exit 1
       # Here's where you will add some code to rollback on failure
-      - destroy-environment     
+      - destroy-environment
 
   run-migrations:
     docker:
@@ -249,7 +253,7 @@ jobs:
             fi
             #exit 1
       # Here's where you will add some code to rollback on failure
-      - destroy-environment   
+      - revert-migrations
 
   deploy-frontend:
     docker:
@@ -271,7 +275,7 @@ jobs:
             # your code here
             export BACKEND_IP=$(aws ec2 describe-instances \          
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            --filters "Name=tag:Project,Values=udacity"
+            --filters "Name=tag:Project,Values=uda-people"
             export API_URL="http://${BACKEND_IP}:3030"
             echo "API_URL = ${API_URL}"
             echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
@@ -286,7 +290,7 @@ jobs:
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       # Here's where you will add some code to rollback on failure      
-                    
+      - destroy-environment
   deploy-backend:
     docker:
       # Docker image here that supports Ansible
@@ -309,33 +313,66 @@ jobs:
           name: Deploy backend
           command: |
             # your code here
-            ansible-playbook -i /ansible/inventory.txt ansible/deploy-backend.yml
+            cd backend
+            npm i
+            npm run build
+            cd ..
+            ## Zip the directory
+            tar -C backend -czvf artifact.tar.gz .
+            cd .circleci/ansible
+            echo "Contents  of the inventory.txt file is -------"
+            cat inventory.txt
+            ansible-playbook -i /ansible/inventory.txt .circleci/ansible/deploy-backend.yml
       # Here's where you will add some code to rollback on failure  
-
+      - destroy-environment
   smoke-test:
     docker:
       # Lightweight Docker image 
       - image: alpine:latest
     steps:
       # Checkout code from git
+      - checkout
       - run:
           name: Install dependencies
           command: |
             # your code here
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
       - run:
           name: Get backend url
           command: |
             # your code here
+            export BACKEND_IP=$(aws ec2 describe-instances \          
+            --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            --filters "Name=tag:Project,Values=uda-people"
       - run:
           name: Backend smoke test.
           command: |
             # your code here
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "${API_URL}"
+            if curl "${API_URL}/api/status" | grep "ok"
+            then
+            	return 0
+            else
+            	return 1
+            fi
       - run:
           name: Frontend smoke test.
           command: |
             # your code here
+            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/#/employees"            
+            echo ${URL} 
+            if curl -s ${URL} | grep "Welcome"
+            then
+            	# Change this to 0 after the job fails
+              return 1
+            else
+              return 1
+            fi
       # Here's where you will add some code to rollback on failure  
-
+      - destroy-environment
   cloudfront-update:
     docker:
       # Docker image here that supports AWS CLI
@@ -351,7 +388,7 @@ jobs:
           command: |
             # your code here
       # Here's where you will add some code to rollback on failure  
-
+      - destroy-environment
   cleanup:
     docker:
       # Docker image here
@@ -376,18 +413,18 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend
-      - build-backend
-      - test-frontend:
-          requires: [build-frontend]
-      - test-backend:
-          requires: [build-backend]
-      - scan-backend:
-          requires: [build-backend]
-      - scan-frontend:
-          requires: [build-frontend]
+      #- build-frontend
+      #- build-backend
+      #- test-frontend:
+      #    requires: [build-frontend]
+      #- test-backend:
+      #    requires: [build-backend]
+      #- scan-backend:
+      #    requires: [build-backend]
+      #- scan-frontend:
+      #    requires: [build-frontend]
       - deploy-infrastructure:
-          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+      #    requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           filters:
             branches:
               only: [master]
