@@ -14,6 +14,7 @@ commands:
           command: |
             # Your code here
             # exit 1
+              aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
               aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
               aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
 
@@ -349,7 +350,8 @@ jobs:
           name: Get backend url
           command: |
             # your code here
-            #/usr/local/bin/aws --version
+            aws --version
+            /usr/local/bin/aws --version
             export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].{Instance:PublicIpAddress}' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
       - run:
           name: Backend smoke test.
