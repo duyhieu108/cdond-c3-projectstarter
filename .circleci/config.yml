@@ -396,10 +396,10 @@ jobs:
           name: Update cloudfront distribution
           command: |
             # your code here
-            export oldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name==\`WorkflowID\`].Value" --no-paginate --output text)
+            export oldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name==\`oldWorkflowID\`].Value" --no-paginate --output text)
             echo $oldWorkflowID >> ~/oldWorkflowID.txt
             cat ~/oldWorkflowID.txt
-            aws cloudformation deploy --template-file .circleci/files/cloudfront.yml --stack-name udapeople-cloudfront --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" --tags Project=uda-people
+            aws cloudformation deploy --template-file .circleci/files/cloudfront.yml --stack-name udapeople-cloudfront --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" oldWorkflowID=$oldWorkflowID --tags Project=uda-people
             echo oldWorkflowID: "${oldWorkflowID}"
             echo currentWorkflowID: "${CIRCLE_WORKFLOW_ID:0:7}"
       # Here's where you will add some code to rollback on failure  
@@ -415,7 +415,7 @@ jobs:
           command: |
             # your code here
             ## Fetch the Old workflow ID
-            export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name==\`WorkflowID\`].Value" --no-paginate --output text)
+            export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name==\`oldWorkflowID\`].Value" --no-paginate --output text)
             echo OldWorkflowID: "${OldWorkflowID}"
             echo CIRCLE_WORKFLOW_ID "${CIRCLE_WORKFLOW_ID:0:7}"
             ## Fetch the stack names         
