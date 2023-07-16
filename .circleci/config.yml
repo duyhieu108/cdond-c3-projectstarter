@@ -312,6 +312,7 @@ jobs:
             # your code here
             cd backend
             npm i
+            npm install
             npm run build
             cd ..
             ## Zip the directory
