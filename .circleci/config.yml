@@ -5,8 +5,7 @@ orbs:
 commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
-    #parameters:
-      # Add parameter here   
+
     steps:
       - run:
           name: Destroy environments
@@ -20,12 +19,10 @@ commands:
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
-    #parameters:
-      # Add parameter here
+
     steps:
       - run:
           name: Revert migrations
-          # Add when this will run
           when: on_fail
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
@@ -78,12 +75,8 @@ jobs:
 
   test-frontend:
     docker:
-      # Docker image here
       - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
-      # Restore from cache
-      # Your job code here
       - checkout
       - restore_cache:
           keys: [frontend-build]
@@ -96,12 +89,8 @@ jobs:
             npm run test
   test-backend:
     docker:
-      # Docker image here
       - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
-      # Restore from cache
-      # Your job code here
       - checkout
       - restore_cache:
           keys: [backend-build]
@@ -114,12 +103,8 @@ jobs:
              npm run test
   scan-frontend:
     docker:
-      # Docker image here
       - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
-      # Restore from cache
-      # Your job code here
       - checkout
       - restore_cache:
           keys: [frontend-build]
@@ -134,12 +119,8 @@ jobs:
             # npm audit --audit-level=critical
   scan-backend:
     docker:
-      # Docker image here
       - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
-      # Restore from cache
-      # Your job code here
       - checkout
       - restore_cache:
           keys: [backend-build]
@@ -153,10 +134,8 @@ jobs:
             # npm audit --audit-level=critical
   deploy-infrastructure:
     docker:
-      # Docker image here that supports AWS CLI
       - image: amazon/aws-cli
     steps:
-      # Checkout code from git
       - checkout
       - run: yum install -y tar gzip
       - run:
@@ -193,12 +172,8 @@ jobs:
 
   configure-infrastructure:
     docker:
-      # Docker image here that supports Ansible
       - image: python:3.7-alpine3.11
     steps:
-      # Checkout code from git
-      # Add ssh keys with fingerprint
-      # attach workspace
       - checkout
       - add_ssh_keys:
           fingerprints: ["09:98:3b:1d:61:bf:45:a4:56:92:a4:c2:7d:7e:13:63"]
@@ -232,10 +207,8 @@ jobs:
 
   run-migrations:
     docker:
-      # Docker image here that supports NodeJS
       - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
       - checkout
       - run:
           name: Run migrations
@@ -265,10 +238,8 @@ jobs:
 
   deploy-frontend:
     docker:
-      # Docker image here that supports AWS CLI
       - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
       - checkout
       - run:
           name: Install dependencies
@@ -299,12 +270,8 @@ jobs:
       - destroy-environment
   deploy-backend:
     docker:
-      # Docker image here that supports Ansible
       - image: python:3.7-alpine3.11
     steps:
-      # Checkout code from git
-      # Add ssh keys with fingerprint
-      # attach workspace
       - checkout
       - add_ssh_keys:
           fingerprints: ["09:98:3b:1d:61:bf:45:a4:56:92:a4:c2:7d:7e:13:63"]
@@ -338,10 +305,8 @@ jobs:
       - destroy-environment
   smoke-test:
     docker:
-      # Lightweight Docker image 
       - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
       - checkout
       - run:
           name: Install dependencies
@@ -367,7 +332,7 @@ jobs:
             export API_URL="http://${BACKEND_IP}:3030/api/status"
             echo "API_URL = ${API_URL}"
             export BACKEND_RESPONSE=$(curl ${API_URL})
-            if [[ $BACKEND_RESPONSE == *"Hello world"* ]] 
+            if [[ $BACKEND_RESPONSE == *"ok"* ]] 
             then
             	exit 0
             else
@@ -392,11 +357,9 @@ jobs:
       #- revert-migrations
   cloudfront-update:
     docker:
-      # Docker image here that supports AWS CLI
       - image: amazon/aws-cli
     steps:
       - checkout
-      # Checkout code from git
       - run:
           name: Install dependencies
           command: |
@@ -445,18 +408,18 @@ jobs:
 workflows:
   default:
     jobs:
-      #- build-frontend
-      #- build-backend
-      #- test-frontend:
-      #    requires: [build-frontend]
-      #- test-backend:
-      #    requires: [build-backend]
-      #- scan-backend:
-      #    requires: [build-backend]
-      #- scan-frontend:
-      #    requires: [build-frontend]
+      - build-frontend
+      - build-backend
+      - test-frontend:
+          requires: [build-frontend]
+      - test-backend:
+          requires: [build-backend]
+      - scan-backend:
+          requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]
       - deploy-infrastructure:
-      #    requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           filters:
             branches:
               only: [master]
@@ -468,10 +431,9 @@ workflows:
           requires: [run-migrations]
       - deploy-backend:
           requires: [run-migrations]
-      #- smoke-test:
-      #    requires: [deploy-backend, deploy-frontend]
+      - smoke-test:
+          requires: [deploy-backend, deploy-frontend]
       - cloudfront-update:
-      #    requires: [smoke-test]
-           requires: [deploy-backend]
+          requires: [smoke-test]
       - cleanup:
           requires: [cloudfront-update]
