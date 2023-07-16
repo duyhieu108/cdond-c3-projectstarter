@@ -356,7 +356,7 @@ jobs:
             export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].{Instance:PublicIpAddress}' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
             export API_URL="http://${BACKEND_IP}:3030/api/status"
             echo "API_URL = ${API_URL}"
-            if curl "${API_URL}/api/status" | grep "Hello world!"
+            if curl ${API_URL} | grep "Hello world!"
             then
             	return 0
             else
@@ -396,7 +396,7 @@ jobs:
             export oldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name==\`WorkflowID\`].Value" --no-paginate --output text)
             echo $oldWorkflowID >> ~/oldWorkflowID.txt
             cat ~/oldWorkflowID.txt
-            aws cloudformation deploy --template-file .circleci/files/cloudfront.yml --stack-name cloudfront-${CIRCLE_WORKFLOW_ID:0:7} --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" --tags Project=uda-people
+            aws cloudformation deploy --template-file .circleci/files/cloudfront.yml --stack-name cloudfront-${oldWorkflowID} --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" --tags Project=uda-people
             echo oldWorkflowID: "${oldWorkflowID}"
             echo currentWorkflowID: "${CIRCLE_WORKFLOW_ID:0:7}"
       # Here's where you will add some code to rollback on failure  
