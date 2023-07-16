@@ -3,10 +3,10 @@ Description: >
 
 Parameters:
   WorkflowID:
-    Description: Unique identifier.
+    Description: Unique WorkflowID identifier.
     Type: String
   oldWorkflowID:
-    Description: Unique identifier.
+    Description: Unique oldWorkflowID identifier.
     Type: String
 
 
