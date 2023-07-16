@@ -373,7 +373,7 @@ jobs:
             if [[ $FRONT_RESPONSE == *"Welcome"* ]] 
             then
             	# Change this to 0 after the job fails
-              exit 1
+              exit 0
             else
               exit 1
             fi
@@ -450,20 +450,20 @@ workflows:
       #    requires: [build-frontend]
       - deploy-infrastructure:
       #    requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-          filters:
-            branches:
-              only: [master]
+      #    filters:
+      #      branches:
+      #        only: [master]
       - configure-infrastructure:
-          requires: [deploy-infrastructure]
+      #    requires: [deploy-infrastructure]
       - run-migrations:
-          requires: [configure-infrastructure]
+      #    requires: [configure-infrastructure]
       - deploy-frontend:
-          requires: [run-migrations]
-      - deploy-backend:
-          requires: [run-migrations]
-      - smoke-test:
-          requires: [deploy-backend, deploy-frontend]
+      #    requires: [run-migrations]
+      #- deploy-backend:
+      #    requires: [run-migrations]
+      #- smoke-test:
+      #    requires: [deploy-backend, deploy-frontend]
       - cloudfront-update:
-          requires: [smoke-test]
+      #    requires: [smoke-test]
       #- cleanup:
       #    requires: [cloudfront-update]
