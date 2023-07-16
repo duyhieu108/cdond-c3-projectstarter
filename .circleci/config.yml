@@ -410,7 +410,7 @@ jobs:
     steps:
       # Checkout code from git
       - run:
-          name: Get old stack workflow id
+          name: Get old stack workflow id and clean up follow blue green deployment
           command: |
             # your code here
             ## Fetch the Old workflow ID
