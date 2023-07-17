@@ -353,8 +353,8 @@ jobs:
               exit 1
             fi
       # Here's where you will add some code to rollback on failure  
-      #- destroy-environment
-      #- revert-migrations
+      - destroy-environment
+      - revert-migrations
   cloudfront-update:
     docker:
       - image: amazon/aws-cli
@@ -375,13 +375,11 @@ jobs:
             echo oldWorkflowID: "${oldWorkflowID}"
             echo currentWorkflowID: "${CIRCLE_WORKFLOW_ID:0:7}"
       # Here's where you will add some code to rollback on failure  
-      #- destroy-environment
+      - destroy-environment
   cleanup:
     docker:
-      # Docker image here
       - image: amazon/aws-cli
     steps:
-      # Checkout code from git
       - run:
           name: Get old stack workflow id and clean up follow blue green deployment
           command: |
